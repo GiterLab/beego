@@ -43,7 +43,7 @@ const (
 )
 
 const (
-	routerTypeBeego   = iota
+	routerTypeBeego = iota
 	routerTypeRESTFul
 	routerTypeHandler
 )
@@ -652,6 +652,9 @@ func (p *ControllerRegister) execFilter(context *beecontext.Context, urlPath str
 	return false
 }
 
+// GiterLabServeHTTP 用户回调函数 ServeHTTP
+var GiterLabServeHTTP func(rw http.ResponseWriter, r *http.Request)
+
 // Implement http.Handler interface.
 func (p *ControllerRegister) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 	startTime := time.Now()
@@ -663,6 +666,13 @@ func (p *ControllerRegister) ServeHTTP(rw http.ResponseWriter, r *http.Request) 
 		routerInfo   *ControllerInfo
 		isRunnable   bool
 	)
+
+	// add by tobyzxj
+	// 做路由转发映射
+	if GiterLabServeHTTP != nil {
+		GiterLabServeHTTP(rw, r)
+	}
+
 	context := p.pool.Get().(*beecontext.Context)
 	context.Reset(rw, r)
 
@@ -877,7 +887,7 @@ func (p *ControllerRegister) ServeHTTP(rw http.ResponseWriter, r *http.Request) 
 	}
 
 Admin:
-//admin module record QPS
+	//admin module record QPS
 
 	statusCode := context.ResponseWriter.Status
 	if statusCode == 0 {
